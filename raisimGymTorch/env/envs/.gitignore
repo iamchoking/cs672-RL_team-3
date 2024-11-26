@@ -6,4 +6,4 @@
 !/some_other_files
 
 # Folder to not ignore
-!/rsg*/
+!/cs672*/

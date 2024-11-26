@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="pogo_test">
+    <link name="base_pogo">
+        <inertial>
+            <origin xyz="-0.00041349 0 0.11352" rpy="0 0 0" />
+            <mass value="9.5507" />
+            <inertia ixx="0.20267" ixy="-1.9035E-09" ixz="0.00017083" iyy="0.20251" iyz="-1.4926E-09" izz="0.062877" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pogo_test/meshes/base_pogo.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.675 0.11 0.761 1" />
+            </material>
+        </visual>
+    </link>
+    <link name="tip">
+        <inertial>
+            <origin xyz="0.0015564 0 -0.2941" rpy="0 0 0" />
+            <mass value="1.4887" />
+            <inertia ixx="0.041087" ixy="-1.8012E-12" ixz="-0.00015408" iyy="0.04116" iyz="4.8126E-12" izz="0.0014675" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pogo_test/meshes/tip.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.82 0.576 0.063 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="base_tip" type="prismatic">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="base_pogo" />
+        <child link="tip" />
+        <axis xyz="0 0 1" />
+        <limit lower="0" upper="0.45"/>
+    </joint>
+    <link name="foot"> 
+    <!-- link for collision body only -->
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0" />
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
+        <!-- <visual>
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="package://pogo_test/meshes/foot.STL" />
+            </geometry>
+            <material
+                name="">
+                <color
+                    rgba="0.843137254901961 0.843137254901961 0.843137254901961 0.1" />
+            </material>
+        </visual> -->
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="0.05"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="tip_foot_fixed" type="fixed">
+        <origin xyz="0 0 -0.5" rpy="0 0 0" />
+        <parent link="tip" />
+        <child link="foot" />
+        <axis xyz="0 0 0" />
+    </joint>
+    <link name="cross">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.16" />
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pogo_test/meshes/cross.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="1 1 1 0.5" />
+            </material>
+        </visual>
+    </link>
+    <joint name="base_cross" type="revolute">
+        <origin xyz="0 0 0.04" rpy="0 0 0" />
+        <parent link="base_pogo" />
+        <child link="cross" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.0472" upper="1.0472" effort="700"/>
+    </joint>
+    <link name="guide">
+        <inertial>
+            <origin xyz="0 0 0.75" rpy="0 0 0" />
+            <mass value="4.7446" />
+            <inertia ixx="0.89902" ixy="4.0122E-10" ixz="3.7742E-06" iyy="0.89892" iyz="4.6169E-08" izz="0.00089298" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pogo_test/meshes/guide.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.91 0.157 0.157 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="cross_guide" type="revolute">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="cross" />
+        <child link="guide" />
+        <axis xyz="1 0 0" />
+        <limit lower="-1.0472" upper="1.0472" effort="700"/>
+    </joint>
+    <link name="mass">
+        <inertial>
+            <origin xyz="0 0 0.57391" rpy="0 0 0" />
+            <mass value="70.816" />
+            <inertia ixx="8.2491" ixy="-1.3363E-05" ixz="0.0083979" iyy="8.2476" iyz="-7.1984E-05" izz="0.3199" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pogo_test/meshes/mass.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.141 0.659 0.016 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.75" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.05" length="1"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="guide_mass" type="prismatic">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="guide" />
+        <child link="mass" />
+        <axis xyz="0 0 1" />
+        <limit lower="0" upper="0.4" effort="3000"/>
+    </joint>
+</robot>
+
