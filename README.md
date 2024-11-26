@@ -1,4 +1,5 @@
-## raisim_env_anymal
+## POGO control with ```raisimGymTorch```
+For more details about the POGO system itself, please see [this repo](https://github.com/iamchoking/cs672-Dyn)
 
 ### Dependencies
 ```raisimgym```
