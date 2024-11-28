@@ -27,6 +27,7 @@ PYBIND11_MODULE(RAISIMGYM_TORCH_ENV_NAME, m) {
     .def("setSeed", &VectorizedEnvironment<ENVIRONMENT>::setSeed)
     .def("getRewardInfo", &VectorizedEnvironment<ENVIRONMENT>::getRewardInfo)
     .def("close", &VectorizedEnvironment<ENVIRONMENT>::close)
+    .def("setCommand", &VectorizedEnvironment<ENVIRONMENT>::setCommand)
     .def("isTerminalState", &VectorizedEnvironment<ENVIRONMENT>::isTerminalState)
     .def("setSimulationTimeStep", &VectorizedEnvironment<ENVIRONMENT>::setSimulationTimeStep)
     .def("setControlTimeStep", &VectorizedEnvironment<ENVIRONMENT>::setControlTimeStep)

@@ -16,19 +16,18 @@ class Actor:
         self.action_mean = None
 
     def sample(self, obs):
-        self.action_mean = self.architecture.architecture(obs).cpu().numpy()
+        self.action_mean = self.architecture.forward(obs)
+        self.action_mean = self.action_mean.squeeze(dim=0).cpu().numpy()
         actions, log_prob = self.distribution.sample(self.action_mean)
         return actions, log_prob
 
     def evaluate(self, obs, actions):
-        self.action_mean = self.architecture.architecture(obs)
+        self.action_mean = self.architecture.forward(obs)
+        self.action_mean = self.action_mean.view(-1, *self.action_shape)
         return self.distribution.evaluate(self.action_mean, actions)
 
     def parameters(self):
         return [*self.architecture.parameters(), *self.distribution.parameters()]
-
-    def noiseless_action(self, obs):
-        return self.architecture.architecture(torch.from_numpy(obs).to(self.device))
 
     def save_deterministic_graph(self, file_name, example_input, device='cpu'):
         transferred_graph = torch.jit.trace(self.architecture.architecture.to(device), example_input)
@@ -60,7 +59,7 @@ class Critic:
         return self.architecture.architecture(obs).detach()
 
     def evaluate(self, obs):
-        return self.architecture.architecture(obs)
+        return self.architecture.architecture(obs).view(-1, 1)
 
     def parameters(self):
         return [*self.architecture.parameters()]
@@ -118,7 +117,6 @@ class MultivariateGaussianDiagonalCovariance(nn.Module):
 
     def evaluate(self, logits, outputs):
         distribution = Normal(logits, self.std.reshape(self.dim))
-
         actions_log_prob = distribution.log_prob(outputs).sum(dim=1)
         entropy = distribution.entropy().sum(dim=1)
         return actions_log_prob, entropy
@@ -130,3 +128,41 @@ class MultivariateGaussianDiagonalCovariance(nn.Module):
         current_std = self.std.detach()
         new_std = torch.max(current_std, min_std.detach()).detach()
         self.std.data = new_std
+
+    def enforce_maximum_std(self, max_std):
+        current_std = self.std.detach()
+        new_std = torch.min(current_std, max_std.detach()).detach()
+        self.std.data = new_std
+
+class GRU_MLP_Actor(nn.Module):
+    def __init__(self, measurement_dim, hidden_dim, mlp_shape, output_size, batch_size, device='cuda'):
+        super(GRU_MLP_Actor, self).__init__()
+        self.device = device
+        self.measurement_dim = measurement_dim
+        self.hidden_dim = hidden_dim
+        self.mlp_shape = mlp_shape
+        self.batch_size = batch_size
+        self.GRU = nn.GRU(input_size=self.measurement_dim, hidden_size=self.hidden_dim, num_layers=1).to(self.device)
+        self.MLP = MLP(shape=self.mlp_shape, actionvation_fn=nn.LeakyReLU, input_size=self.hidden_dim + self.measurement_dim + 3, output_size=output_size).to(self.device)
+        self.h = torch.zeros([1, self.batch_size, self.hidden_dim], dtype=torch.float32).to(self.device)
+        self.init_weights(self.GRU)
+        self.input_shape = [measurement_dim + 3]
+        self.output_shape = [output_size]
+
+    def forward(self, input):
+        latent, self.h = self.GRU(input[:, :, :self.measurement_dim], self.h)
+        action = self.MLP.architecture(torch.cat((latent, input), dim=2))
+
+        return action
+
+    def init_hidden(self):
+        self.h = torch.zeros([1, self.batch_size, self.hidden_dim], dtype=torch.float32).to(self.device)
+
+    def init_by_done(self, arg_dones):
+        self.h[:, arg_dones, :] = torch.zeros([1, arg_dones.size, self.hidden_dim], dtype=torch.float32).to(self.device)
+
+    @staticmethod
+    def init_weights(rnn):
+        for layer in range(len(rnn.all_weights)):
+            torch.nn.init.kaiming_normal_(rnn.all_weights[layer][0])
+            torch.nn.init.kaiming_normal_(rnn.all_weights[layer][1])

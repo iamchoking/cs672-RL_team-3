@@ -77,6 +77,9 @@ class RaisimGymVecEnv:
     def close(self):
         self.wrapper.close()
 
+    def setCommand(self, command):
+        self.wrapper.setCommand(command)
+
     def curriculum_callback(self):
         self.wrapper.curriculumUpdate()
 

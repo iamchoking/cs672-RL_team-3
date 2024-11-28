@@ -37,6 +37,7 @@ class RaisimGymEnv {
   /////// optional methods ///////
   virtual void curriculumUpdate() {};
   virtual void close() {};
+  virtual void setCommand(const Eigen::Ref<EigenVec>& command) {};
   virtual void setSeed(int seed) {};
   ////////////////////////////////
 
